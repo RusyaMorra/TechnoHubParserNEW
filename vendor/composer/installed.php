@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => 'parser/siteparser',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => 'b5f5b9478d662276e809f1fdf1011ec537b7826e',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        'electrolinux/phpquery' => array(
+            'pretty_version' => '0.9.6',
+            'version' => '0.9.6.0',
+            'reference' => '6cb8afcfe8cd4ce45f2f8c27d561383037c27a3a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../electrolinux/phpquery',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'krugozor/database' => array(
+            'pretty_version' => 'V2.0',
+            'version' => '2.0.0.0',
+            'reference' => '836b7ff80604f748910f00d92a35a3ccaab77b0a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../krugozor/database',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'parser/siteparser' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'b5f5b9478d662276e809f1fdf1011ec537b7826e',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);

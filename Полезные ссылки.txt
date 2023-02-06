@@ -1,0 +1,3 @@
+https://badtry.net/bystryi-php-parsier-s-razborom-dom-i-asinkhronnymi-zaprosami/
+
+https://falbar.ru/article/pishem-parser-kontenta-na-php
