@@ -7,13 +7,21 @@ use \phpQuery;
 class ParserCardsClass {
 
     //тут храним домен
-    public $Domen = null;
+    public $domen;
     //тут храним url парсинга 
-    public $siteURL = null;
+    public $siteURL;
+    //тут храним url get параметры
+    public $getParameters;
+    //тут храним количество страниц пагинации
+    public $paginationCount;
+    //массив ссылок на категории
+    public $categoriesArrayOfLinks;
+    //массив названий категории
+    public $categoriesArrayOfNames;
 
-
-    //Тут хроняться ссылки для прохода во вложености карточек 
-    protected $dataCards = [];
+ 
+    //Тут храняться ссылки для прохода во вложености карточек 
+    protected $cardsDataLinks = [];
     //Тут храняться ключи и значения собранной информации 
     protected $cardsDataList = [];
     //Тут храним коллекции картинок
@@ -23,12 +31,32 @@ class ParserCardsClass {
    /**
     *  В инпут получаем url спарсеной  страницы 
     */
-    public function __construct(string $url) {
+    public function __construct(array $Parameters) {
+        
+        $this->writeInObjectProperties($Parameters);
         $this->errorDetector();
-        $this->siteURL = $url;
         $this->parserStarter();
     
     }
+
+
+    /**
+    *  Записываем в свойста обьекта 
+    */
+    public function writeInObjectProperties(array $Parameters){
+        $this->domen = $Parameters['domen'];
+        $this->siteURL = $Parameters['siteURL'];
+        $this->getParameters = $Parameters['getParameters'];
+        $this->paginationCount = $Parameters['paginationCount'];
+        $this->categoriesArrayOfNames = $Parameters['categoriesArrayOfNames'];
+        $this->categoriesArrayOfLinks = $Parameters['categoriesArrayOfLinks'];
+     
+
+    }
+
+
+
+
 
     /**
     *  Детектим ошибки
@@ -46,7 +74,23 @@ class ParserCardsClass {
     */
 
     private function parserStarter() {
-      $this->parserCards($this->ParserSiteRequest($this->siteURL));
+        // Тут должен быт цикл  для  сборки (нужная страница, категория, пагинация)
+       
+        for ($j=0; $j < count($this->categoriesArrayOfLinks) ; $j++) {
+
+            for ($i=0; $i < $this->paginationCount + 1; $i++) {
+                //echo $this->siteURL. $this->categoriesArrayOfLinks[$j] . $this->getParameters .  $i ; ?><br><?
+                
+                $this->parserCards($this->ParserSiteRequest($this->siteURL. $this->categoriesArrayOfLinks[$j] . $this->getParameters .  $i));
+
+            }
+        }
+
+        //сохраняем
+        $this->saving();
+
+
+
     }
 
 
@@ -77,12 +121,11 @@ class ParserCardsClass {
             return false;
         }else {
             $pq = phpQuery::newDocument('<meta charset="utf-8">' . $result); 
-            //получаем ссылки
-            $this->GetHrefLinks($pq);
+            
+            
             //получаем внутриности каждой карточки
-            $this->GetInnerData();
-            //сохраняем
-            $this->saving();
+            $this->GetInnerData($this->GetHrefLinks($pq)); // передаем массив данных + эта функция записывает все ссылки глобально в свойства объекта
+           
            
         }
 
@@ -94,30 +137,30 @@ class ParserCardsClass {
     *  Получаем href атрибуты карточек(то есть ссылки)
     */
 
-    private function GetInnerData(){
-
-        foreach($this->dataCards as $dataCardlink){
-            $resultCard = $this->ParserSiteRequest('https://belwood.kz'. $dataCardlink);
+    private function GetInnerData($Links){
+        
+        foreach($Links as $CardDataLink){
+            $resultCard = $this->ParserSiteRequest( $this->domen . $CardDataLink);
             $pq = phpQuery::newDocument('<meta charset="utf-8">' . $resultCard); 
             //получаем картинки
-            $this->GetImgSrc($pq);
+            //$this->GetImgSrc($pq);
             
             //сборка данных в один массив
-            foreach($this->preFormat($this->dataCards) as $name){
-                $this->cardsDataList[$name] = [
-                // "name" => $pq->find('.product-top__title')->text(),
-                // "price"=> intval(preg_replace('/[^0-9]/', '', $pq->find('.total-price')->text())),
-                // "oldprice" =>intval(preg_replace('/[^0-9]/', '', $pq->find("#old-price-field")->text())),
-                // "currencyId" => 'RUR',
-                // "categoryId" => '21',
-                // "store" => 'false',
-                // "pickup" => 'true',
-                // "delivery" => 'true',
-                // "vendor" => 'Elektronika',
-                    "url" => "https://belwood.kz". $dataCardlink,
-                    "description" => $pq->find('.product-info__text p')->text()
-                ];
-            }
+            
+            $this->cardsDataList[] = [
+                "name" => $pq->find('.product-top__title')->text(),
+            // "price"=> intval(preg_replace('/[^0-9]/', '', $pq->find('.total-price')->text())),
+            // "oldprice" =>intval(preg_replace('/[^0-9]/', '', $pq->find("#old-price-field")->text())),
+            // "currencyId" => 'RUR',
+            // "categoryId" => '21',
+            // "store" => 'false',
+            // "pickup" => 'true',
+            // "delivery" => 'true',
+            // "vendor" => 'Elektronika',
+                "url" => "https://belwood.kz". $CardDataLink,
+                "description" => $pq->find('.product-info__text p')->text()
+            ];
+           
 
         }
     }
@@ -134,10 +177,14 @@ class ParserCardsClass {
          // парсим все ссылки товара на страницах 
          $listlinks = $pq->find('.catalog-item .catalog-item__title-container a');
          
+         $localLinksForReturn = [];
          // проходимься по элементам и берем у кажной атримут href 
          foreach($listlinks as $link){
-            $this->dataCards[] = pq($link)->attr('href');
+            $this->cardsDataLinks[] = pq($link)->attr('href');
+            $localLinksForReturn[] = pq($link)->attr('href');
          }
+         
+         return  $localLinksForReturn;
     }
 
     /**
@@ -184,7 +231,7 @@ class ParserCardsClass {
     */
     private function TXTSave(){
         $jsonData = json_encode($this->cardsDataList, JSON_UNESCAPED_UNICODE|JSON_FORCE_OBJECT|JSON_PRETTY_PRINT);
-        file_put_contents("./data/txt/parsedData.txt", $jsonData);
+        file_put_contents("./data/txt/txt_Data.txt", $jsonData);
 
     }
 
@@ -197,7 +244,7 @@ class ParserCardsClass {
         $numName = $numTitle;
         $resArray = [];
         for($i = 0 ; $i < $arrayLength; $i++ ){
-            $resArray[] =  $numName . $i;      
+            $resArray[] =  $numName . $i;
         }
         return  $resArray;
     }

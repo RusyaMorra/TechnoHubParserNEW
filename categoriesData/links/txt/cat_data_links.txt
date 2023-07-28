@@ -1,0 +1,8 @@
+{
+    "0": "\/catalog\/mezhkomnatnye_dveri\/",
+    "1": "\/catalog\/vkhodnye_dveri\/",
+    "2": "\/catalog\/dekor\/",
+    "3": "\/catalog\/napolnye_pokrytiya\/",
+    "4": "\/catalog\/spetsialnye-dv\/",
+    "5": "\/catalog\/furnitura\/"
+}
